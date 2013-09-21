@@ -5,98 +5,10 @@
 
 #include <stddef.h>
 
+#include "utils.h"
+
 #define NEWLINE "\n\r\0"
 
-void *memcpy(void *dest, const void *src, size_t n);
-
-int strcmp(const char *a, const char *b) __attribute__ ((naked));
-int strcmp(const char *a, const char *b)
-{
-	asm(
-        "strcmp_lop:                \n"
-        "   ldrb    r2, [r0],#1     \n"
-        "   ldrb    r3, [r1],#1     \n"
-        "   cmp     r2, #1          \n"
-        "   it      hi              \n"
-        "   cmphi   r2, r3          \n"
-        "   beq     strcmp_lop      \n"
-		"	sub     r0, r2, r3  	\n"
-        "   bx      lr              \n"
-		:::
-	);
-}
-
-size_t strlen(const char *s) __attribute__ ((naked));
-size_t strlen(const char *s)
-{
-	asm(
-		"	sub  r3, r0, #1			\n"
-        "strlen_loop:               \n"
-		"	ldrb r2, [r3, #1]!		\n"
-		"	cmp  r2, #0				\n"
-        "   bne  strlen_loop        \n"
-		"	sub  r0, r3, r0			\n"
-		"	bx   lr					\n"
-		:::
-	);
-}
-
-void puts(char *s)
-{
-	while (*s) {
-		while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET)
-			/* wait */ ;
-		USART_SendData(USART2, *s);
-		s++;
-	}
-}
-
-void int2str(int input, char *output) ;
-void printf(char *output);
-
-int strncmp(char *val1, char *val2, int length)
-{
-    	int i;
-
-    	for(i = 0; i < length; i++) {
-    	    	if(val1[i] != val2[i]) {
-    	    	    	return val1[i] - val2[i];
-	    	}
-	}
-
-	return 0;
-}
-
-void printf(char *output)
-{
-	int fdout;    
-
-	fdout = mq_open("/tmp/mqueue/out", 0);
-
-	write(fdout, output, strlen(output) + 1);
-}
-
-void int2str(int input, char *output) 
-{
-	char tmp[16];
-	int num_len = 0, i;
-
-	if(input == 0) {
-	    output[0] = '0';
-	    output[1] = '\0';
-	    return;
-	}
-
-	while(input > 0) {
-		tmp[num_len++] = '0' + (input % 10);
-		input /= 10;
-	}
-
-	for(i = 0; i < num_len; i++) {
-	    output[i] = tmp[num_len - i - 1];
-	}
-	output[num_len] = '\0';
-}
 
 
 #define STACK_SIZE 512 /* Size of task stacks in words */
@@ -391,10 +303,10 @@ void proc_cmd(char *cmd)
 	char tmp[16];
 	int i;
 
-	if(strncmp(cmd, "ps", 2) == 0) {
+	if(!strncmp(cmd, "ps", 2)) {
 	    	printf("Task list : \n\r\0");
 	    	for(i = 0; i < task_count; i++) {
-	    	    	printf("PID -> ")
+	    	    	printf("PID -> ");
 	    	    	int2str(tasks[i].pid, tmp);
 			printf(tmp);
 
@@ -407,6 +319,28 @@ void proc_cmd(char *cmd)
 
 			printf(NEWLINE);
 		}
+	}
+	else if(!strncmp(cmd, "echo", 4) && (strlen(cmd) == 4) || cmd[4] == ' ') {
+		if(strlen(cmd) == 4) {
+			printf(" \0");
+		}
+		else {
+			for(i = 5; i < strlen(cmd); i++) {
+				tmp[0] = cmd[i];
+				tmp[1] = '\0';
+				printf(tmp);
+			}
+		}
+	}
+	else if(!strncmp(cmd, "hello", 5)) {
+		printf("Hello World!\n\r\0");
+	}
+	else if(!strncmp(cmd, "help", 4)) {
+		printf("List all command :\n\r\0");
+		printf("ps    - List all tasks\n\r\0");
+		printf("echo  - Output message\n\r\0");
+		printf("hello - Show welcome message\n\r\0");
+		printf("help  - Show this help table\n\r\0");
 	}
 	else {
 	    printf("Command not found\n\r\0");
