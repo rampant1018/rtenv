@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 
+#define NEWLINE "\n\r\0"
+
 void *memcpy(void *dest, const void *src, size_t n);
 
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
@@ -48,6 +50,54 @@ void puts(char *s)
 		s++;
 	}
 }
+
+void int2str(int input, char *output) ;
+void printf(char *output);
+
+int strncmp(char *val1, char *val2, int length)
+{
+    	int i;
+
+    	for(i = 0; i < length; i++) {
+    	    	if(val1[i] != val2[i]) {
+    	    	    	return val1[i] - val2[i];
+	    	}
+	}
+
+	return 0;
+}
+
+void printf(char *output)
+{
+	int fdout;    
+
+	fdout = mq_open("/tmp/mqueue/out", 0);
+
+	write(fdout, output, strlen(output) + 1);
+}
+
+void int2str(int input, char *output) 
+{
+	char tmp[16];
+	int num_len = 0, i;
+
+	if(input == 0) {
+	    output[0] = '0';
+	    output[1] = '\0';
+	    return;
+	}
+
+	while(input > 0) {
+		tmp[num_len++] = '0' + (input % 10);
+		input /= 10;
+	}
+
+	for(i = 0; i < num_len; i++) {
+	    output[i] = tmp[num_len - i - 1];
+	}
+	output[num_len] = '\0';
+}
+
 
 #define STACK_SIZE 512 /* Size of task stacks in words */
 #define TASK_LIMIT 8  /* Max number of tasks we can handle */
@@ -104,6 +154,10 @@ struct task_control_block {
     struct task_control_block **prev;
     struct task_control_block  *next;
 };
+
+// Global task variables
+struct task_control_block tasks[TASK_LIMIT];
+size_t task_count = 0;
 
 /* 
  * pathserver assumes that all files are FIFOs that were registered
@@ -314,6 +368,51 @@ void queue_str_task2()
 	queue_str_task("Hello 2\n", 50);
 }
 
+char *get_task_status(int status)
+{
+	switch(status) {
+		case TASK_READY:
+			return "Ready";
+		case TASK_WAIT_READ:
+			return "Wait Read";
+		case TASK_WAIT_WRITE:
+			return "Wait Write";
+		case TASK_WAIT_INTR:
+			return "Wait Intr";
+		case TASK_WAIT_TIME:
+			return "Wait Time";
+		default:
+			return "Unknown status";
+	}
+}
+
+void proc_cmd(char *cmd)
+{
+	char tmp[16];
+	int i;
+
+	if(strncmp(cmd, "ps", 2) == 0) {
+	    	printf("Task list : \n\r\0");
+	    	for(i = 0; i < task_count; i++) {
+	    	    	printf("PID -> ")
+	    	    	int2str(tasks[i].pid, tmp);
+			printf(tmp);
+
+			printf(", Status -> ");
+			printf(get_task_status(tasks[i].status));
+
+			printf(", Priority -> ");
+			int2str(tasks[i].priority, tmp);
+			printf(tmp);
+
+			printf(NEWLINE);
+		}
+	}
+	else {
+	    printf("Command not found\n\r\0");
+	}
+}
+
 void serial_readwrite_task()
 {
 	int fdout, fdin;
@@ -325,11 +424,14 @@ void serial_readwrite_task()
 	fdout = mq_open("/tmp/mqueue/out", 0);
 	fdin = open("/dev/tty0/in", 0);
 
-	/* Prepare the response message to be queued. */
-	memcpy(str, "Got:", 4);
+	// Prepare prompt hint string
+	char *prompt_hint = "rampant@rtenv:~/$ \0";
 
 	while (1) {
-		curr_char = 4;
+	    	// Prompt hint
+		printf(prompt_hint);
+
+		curr_char = 0;
 		done = 0;
 		do {
 			/* Receive a byte from the RS232 port (this call will
@@ -340,8 +442,7 @@ void serial_readwrite_task()
 			 * finish the string and inidcate we are done.
 			 */
 			if (curr_char >= 98 || (ch == '\r') || (ch == '\n')) {
-				str[curr_char] = '\n';
-				str[curr_char+1] = '\0';
+				str[curr_char++] = '\0';
 				done = -1;
 				/* Otherwise, add the character to the
 				 * response string. */
@@ -349,12 +450,19 @@ void serial_readwrite_task()
 			else {
 				str[curr_char++] = ch;
 			}
+			// Output thr current input character
+			char tmpstr[2];
+			tmpstr[0] = ch;
+			tmpstr[1] = '\0';
+			printf(tmpstr);
 		} while (!done);
 
 		/* Once we are done building the response string, queue the
 		 * response to be sent to the RS232 port.
 		 */
-		write(fdout, str, curr_char+1+1);
+	    	printf(NEWLINE);
+		proc_cmd(str);
+		printf(NEWLINE);
 	}
 }
 
@@ -366,8 +474,8 @@ void first()
 	if (!fork()) setpriority(0, 0), serialout(USART2, USART2_IRQn);
 	if (!fork()) setpriority(0, 0), serialin(USART2, USART2_IRQn);
 	if (!fork()) rs232_xmit_msg_task();
-	if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task1();
-	if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task2();
+	//if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task1();
+	//if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task2();
 	if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), serial_readwrite_task();
 
 	setpriority(0, PRIORITY_LIMIT);
@@ -669,11 +777,11 @@ _mknod(struct pipe_ringbuffer *pipe, int dev)
 int main()
 {
 	unsigned int stacks[TASK_LIMIT][STACK_SIZE];
-	struct task_control_block tasks[TASK_LIMIT];
+	//struct task_control_block tasks[TASK_LIMIT];
 	struct pipe_ringbuffer pipes[PIPE_LIMIT];
 	struct task_control_block *ready_list[PRIORITY_LIMIT + 1];  /* [0 ... 39] */
 	struct task_control_block *wait_list = NULL;
-	size_t task_count = 0;
+	//size_t task_count = 0;
 	size_t current_task = 0;
 	size_t i;
 	struct task_control_block *task;
