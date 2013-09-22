@@ -36,19 +36,15 @@ size_t strlen(const char *s)
 
 int strncmp(const char *s1, const char *s2, size_t n)
 {
-	unsigned char c1 = '\0';
-	unsigned char c2 = '\0';
+	const unsigned char *_s1 = (void *)s1, *_s2 = (void *)s2;
 
-	while(n > 0) {
-		c1 = (unsigned char)*s1++;
-		c2 = (unsigned char)*s2++;
-		if(c1 == '\0' || c1 != c2) {
-			return c1 - c2;
-		}
-		n--;
+	if(!n--) {
+		return 0;
 	}
 
-	return c1 - c2;
+	for(; *_s1 && *_s2 && n && *_s1 == *_s2; _s1++, _s2++, n--);
+
+	return *_s1 - *_s2;
 }
 
 void puts(char *s)
