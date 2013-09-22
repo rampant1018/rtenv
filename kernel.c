@@ -7,7 +7,7 @@
 
 #include "utils.h"
 
-#define NEWLINE "\n\r\0"
+#define NEWLINE "\n\r"
 
 
 
@@ -303,8 +303,8 @@ void proc_cmd(char *cmd)
 	char tmp[16];
 	int i;
 
-	if(!strncmp(cmd, "ps", 2)) {
-	    	puts("Task list : " NEWLINE);
+	if(!strcmp(cmd, "ps")) {
+	    	puts("Task list : " NEWLINE "\0");
 	    	for(i = 0; i < task_count; i++) {
 	    	    	puts("PID -> ");
 	    	    	int2str(tasks[i].pid, tmp);
@@ -317,7 +317,7 @@ void proc_cmd(char *cmd)
 			int2str(tasks[i].priority, tmp);
 			puts(tmp);
 
-			puts(NEWLINE);
+			puts(NEWLINE "\0");
 		}
 	}
 	else if(!strncmp(cmd, "echo", 4) && (strlen(cmd) == 4) || cmd[4] == ' ') {
@@ -332,18 +332,18 @@ void proc_cmd(char *cmd)
 			}
 		}
 	}
-	else if(!strncmp(cmd, "hello", 5)) {
-		puts("Hello World!" NEWLINE);
+	else if(!strcmp(cmd, "hello")) {
+		puts("Hello World!" NEWLINE "\0");
 	}
-	else if(!strncmp(cmd, "help", 4)) {
-		puts("List all command :" NEWLINE);
-		puts("ps    - List all tasks" NEWLINE);
-		puts("echo  - Output message" NEWLINE);
-		puts("hello - Show welcome message" NEWLINE);
-		puts("help  - Show this help table" NEWLINE);
+	else if(!strcmp(cmd, "help")) {
+		puts("List all command :" NEWLINE "\0");
+		puts("ps    - List all tasks" NEWLINE "\0");
+		puts("echo  - Output message" NEWLINE "\0");
+		puts("hello - Show welcome message" NEWLINE "\0");
+		puts("help  - Show this help table" NEWLINE "\0");
 	}
 	else {
-	    puts("Command not found" NEWLINE);
+	    puts("Command not found" NEWLINE "\0");
 	}
 }
 
@@ -394,9 +394,9 @@ void serial_readwrite_task()
 		/* Once we are done building the response string, queue the
 		 * response to be sent to the RS232 port.
 		 */
-	    	puts(NEWLINE);
+	    	puts(NEWLINE "\0");
 		proc_cmd(str);
-		puts(NEWLINE);
+		puts(NEWLINE "\0");
 	}
 }
 
