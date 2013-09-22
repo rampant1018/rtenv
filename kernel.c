@@ -304,7 +304,7 @@ void proc_cmd(char *cmd)
 	int i;
 
 	if(!strncmp(cmd, "ps", 2)) {
-	    	puts("Task list : \n\r\0");
+	    	puts("Task list : " NEWLINE);
 	    	for(i = 0; i < task_count; i++) {
 	    	    	puts("PID -> ");
 	    	    	int2str(tasks[i].pid, tmp);
@@ -333,17 +333,17 @@ void proc_cmd(char *cmd)
 		}
 	}
 	else if(!strncmp(cmd, "hello", 5)) {
-		puts("Hello World!\n\r\0");
+		puts("Hello World!" NEWLINE);
 	}
 	else if(!strncmp(cmd, "help", 4)) {
-		puts("List all command :\n\r\0");
-		puts("ps    - List all tasks\n\r\0");
-		puts("echo  - Output message\n\r\0");
-		puts("hello - Show welcome message\n\r\0");
-		puts("help  - Show this help table\n\r\0");
+		puts("List all command :" NEWLINE);
+		puts("ps    - List all tasks" NEWLINE);
+		puts("echo  - Output message" NEWLINE);
+		puts("hello - Show welcome message" NEWLINE);
+		puts("help  - Show this help table" NEWLINE);
 	}
 	else {
-	    puts("Command not found\n\r\0");
+	    puts("Command not found" NEWLINE);
 	}
 }
 
@@ -408,8 +408,6 @@ void first()
 	if (!fork()) setpriority(0, 0), serialout(USART2, USART2_IRQn);
 	if (!fork()) setpriority(0, 0), serialin(USART2, USART2_IRQn);
 	if (!fork()) rs232_xmit_msg_task();
-	//if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task1();
-	//if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), queue_str_task2();
 	if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), serial_readwrite_task();
 
 	setpriority(0, PRIORITY_LIMIT);
