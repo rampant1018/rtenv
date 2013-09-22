@@ -304,46 +304,46 @@ void proc_cmd(char *cmd)
 	int i;
 
 	if(!strncmp(cmd, "ps", 2)) {
-	    	printf("Task list : \n\r\0");
+	    	puts("Task list : \n\r\0");
 	    	for(i = 0; i < task_count; i++) {
-	    	    	printf("PID -> ");
+	    	    	puts("PID -> ");
 	    	    	int2str(tasks[i].pid, tmp);
-			printf(tmp);
+			puts(tmp);
 
-			printf(", Status -> ");
-			printf(get_task_status(tasks[i].status));
+			puts(", Status -> ");
+			puts(get_task_status(tasks[i].status));
 
-			printf(", Priority -> ");
+			puts(", Priority -> ");
 			int2str(tasks[i].priority, tmp);
-			printf(tmp);
+			puts(tmp);
 
-			printf(NEWLINE);
+			puts(NEWLINE);
 		}
 	}
 	else if(!strncmp(cmd, "echo", 4) && (strlen(cmd) == 4) || cmd[4] == ' ') {
 		if(strlen(cmd) == 4) {
-			printf(" \0");
+			puts(" \0");
 		}
 		else {
 			for(i = 5; i < strlen(cmd); i++) {
 				tmp[0] = cmd[i];
 				tmp[1] = '\0';
-				printf(tmp);
+				puts(tmp);
 			}
 		}
 	}
 	else if(!strncmp(cmd, "hello", 5)) {
-		printf("Hello World!\n\r\0");
+		puts("Hello World!\n\r\0");
 	}
 	else if(!strncmp(cmd, "help", 4)) {
-		printf("List all command :\n\r\0");
-		printf("ps    - List all tasks\n\r\0");
-		printf("echo  - Output message\n\r\0");
-		printf("hello - Show welcome message\n\r\0");
-		printf("help  - Show this help table\n\r\0");
+		puts("List all command :\n\r\0");
+		puts("ps    - List all tasks\n\r\0");
+		puts("echo  - Output message\n\r\0");
+		puts("hello - Show welcome message\n\r\0");
+		puts("help  - Show this help table\n\r\0");
 	}
 	else {
-	    printf("Command not found\n\r\0");
+	    puts("Command not found\n\r\0");
 	}
 }
 
@@ -363,7 +363,7 @@ void serial_readwrite_task()
 
 	while (1) {
 	    	// Prompt hint
-		printf(prompt_hint);
+		puts(prompt_hint);
 
 		curr_char = 0;
 		done = 0;
@@ -388,15 +388,15 @@ void serial_readwrite_task()
 			char tmpstr[2];
 			tmpstr[0] = ch;
 			tmpstr[1] = '\0';
-			printf(tmpstr);
+			puts(tmpstr);
 		} while (!done);
 
 		/* Once we are done building the response string, queue the
 		 * response to be sent to the RS232 port.
 		 */
-	    	printf(NEWLINE);
+	    	puts(NEWLINE);
 		proc_cmd(str);
-		printf(NEWLINE);
+		puts(NEWLINE);
 	}
 }
 

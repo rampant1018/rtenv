@@ -34,19 +34,6 @@ size_t strlen(const char *s)
 	);
 }
 
-void puts(char *s)
-{
-	while (*s) {
-		while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET)
-			/* wait */ ;
-		USART_SendData(USART2, *s);
-		s++;
-	}
-}
-
-void int2str(int input, char *output) ;
-void printf(char *output);
-
 int strncmp(const char *s1, const char *s2, size_t n)
 {
 	unsigned char c1 = '\0';
@@ -64,13 +51,13 @@ int strncmp(const char *s1, const char *s2, size_t n)
 	return c1 - c2;
 }
 
-void printf(char *output)
+void puts(char *s)
 {
 	int fdout;    
 
 	fdout = mq_open("/tmp/mqueue/out", 0);
 
-	write(fdout, output, strlen(output) + 1);
+	write(fdout, s, strlen(s) + 1);
 }
 
 void int2str(int input, char *output) 
