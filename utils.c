@@ -47,17 +47,21 @@ void puts(char *s)
 void int2str(int input, char *output) ;
 void printf(char *output);
 
-int strncmp(char *val1, char *val2, int length)
+int strncmp(const char *s1, const char *s2, size_t n)
 {
-    	int i;
+	unsigned char c1 = '\0';
+	unsigned char c2 = '\0';
 
-    	for(i = 0; i < length; i++) {
-    	    	if(val1[i] != val2[i]) {
-    	    	    	return val1[i] - val2[i];
-	    	}
+	while(n > 0) {
+		c1 = (unsigned char)*s1++;
+		c2 = (unsigned char)*s2++;
+		if(c1 == '\0' || c1 != c2) {
+			return c1 - c2;
+		}
+		n--;
 	}
 
-	return 0;
+	return c1 - c2;
 }
 
 void printf(char *output)
