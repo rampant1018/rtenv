@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "stm32f10x.h"
 #include "RTOSConfig.h"
+#include "stdarg.h"
 
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
 int strcmp(const char *a, const char *b)
@@ -47,6 +48,19 @@ int strncmp(const char *s1, const char *s2, size_t n)
 	return *_s1 - *_s2;
 }
 
+void putchar(const char c) 
+{
+	int fdout;
+	char tmpstr[2] = {'\0', '\0'};
+
+	fdout = mq_open("/tmp/mqueue/out", 0);
+
+	tmpstr[0] = c;
+
+	write(fdout, tmpstr, 2);
+}
+
+
 void puts(char *s)
 {
 	int fdout;    
@@ -76,4 +90,32 @@ void int2str(int input, char *output)
 	    output[i] = tmp[num_len - i - 1];
 	}
 	output[num_len] = '\0';
+}
+
+int printf(const char *format, ...)
+{
+	int done;
+	va_list arg;
+
+	va_start(arg, format);
+	done = vprintf(format, arg);
+	va_end(arg);
+
+	return done;
+}
+
+int vprintf(const char *format, va_list va)
+{
+	int count = 0;
+
+	while(*format) {
+		if(*format == '\n') {
+			putchar('\r');
+		}
+		putchar(*format);
+		count++;
+		format++;
+	}
+
+	return count;
 }
