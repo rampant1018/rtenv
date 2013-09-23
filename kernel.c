@@ -361,6 +361,8 @@ void serial_readwrite_task()
 	// Prepare prompt hint string
 	char *prompt_hint = "rampant@rtenv:~/$ \0";
 
+	printf("%% %d %c %s\ntest\n", 123, 'c', "string\0");
+
 	while (1) {
 	    	// Prompt hint
 		puts(prompt_hint);

@@ -12,7 +12,7 @@ void puts(char *s);
 void int2str(int input, char *output);
 int strncmp(const char *s1, const char *s2, size_t n);
 
-int printf(const char *format, ...);
-int vprintf(const char *format, va_list arg);
+void printf(const char *format, ...);
+void vprintf(const char *format, va_list arg);
 
 #endif

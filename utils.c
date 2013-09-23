@@ -92,30 +92,51 @@ void int2str(int input, char *output)
 	output[num_len] = '\0';
 }
 
-int printf(const char *format, ...)
+void printf(const char *format, ...)
 {
-	int done;
 	va_list arg;
 
 	va_start(arg, format);
-	done = vprintf(format, arg);
+	vprintf(format, arg);
 	va_end(arg);
-
-	return done;
 }
 
-int vprintf(const char *format, va_list va)
+void vprintf(const char *format, va_list va)
 {
-	int count = 0;
+	int mode = 0; // 0: usual char; 1: specifiers
+	char tmpstr[16];
 
-	while(*format) {
-		if(*format == '\n') {
-			putchar('\r');
+	for(; *format; format++) {
+		if(!mode) { // usual char
+			if(*format == '%') {
+				mode = 1;
+				continue;
+			}
+			else if(*format == '\n') {
+				putchar('\r');
+			}
+			putchar(*format);
 		}
-		putchar(*format);
-		count++;
-		format++;
+		else {
+			switch(*format) {
+				case 'c':
+					putchar(va_arg(va, int));
+					mode = 0;
+					break;
+				case 's':
+					puts(va_arg(va, char *));
+					mode = 0;
+					break;
+				case 'd':
+					int2str(va_arg(va, int), tmpstr);
+					puts(tmpstr);
+					mode = 0;
+					break;
+				case '%':
+					putchar('%');
+					mode = 0;
+					break;
+			}
+		}
 	}
-
-	return count;
 }
