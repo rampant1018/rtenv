@@ -381,14 +381,20 @@ void serial_readwrite_task()
 				/* Otherwise, add the character to the
 				 * response string. */
 			}
+			else if(ch == 127) {
+				if(curr_char > 0) {
+					puts("\b \b\0");
+					curr_char--;
+				}
+			}
 			else {
 				str[curr_char++] = ch;
+				char tmpstr[2];
+				tmpstr[0] = ch;
+				tmpstr[1] = '\0';
+				puts(tmpstr);
 			}
 			// Output thr current input character
-			char tmpstr[2];
-			tmpstr[0] = ch;
-			tmpstr[1] = '\0';
-			puts(tmpstr);
 		} while (!done);
 
 		/* Once we are done building the response string, queue the
