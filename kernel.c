@@ -361,8 +361,6 @@ void serial_readwrite_task()
 	// Prepare prompt hint string
 	char *prompt_hint = "rampant@rtenv:~/$ \0";
 
-	printf("%% %d %c %s\ntest\n", 123, 'c', "string\0");
-
 	while (1) {
 	    	// Prompt hint
 		puts(prompt_hint);
@@ -382,6 +380,28 @@ void serial_readwrite_task()
 				done = -1;
 				/* Otherwise, add the character to the
 				 * response string. */
+			}
+			else if(ch == 27) {
+				read(fdin, &ch, 1);
+				read(fdin, &ch, 1);
+				char tmpesc[4];
+				tmpesc[0] = 27;
+				tmpesc[3] = '\0';
+				switch(ch) {
+					case 65: // Up key
+					case 66: // Down key
+						break;
+					case 67: // Left key
+						tmpesc[1] = '[';
+						tmpesc[2] = 'C';
+						puts(tmpesc);
+						break;
+					case 68: // Right key
+						tmpesc[1] = '[';
+						tmpesc[2] = 'D';
+						puts(tmpesc);
+						break;
+				}
 			}
 			else if(ch == 127) {
 				if(curr_char > 0) {
