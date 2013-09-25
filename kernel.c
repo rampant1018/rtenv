@@ -391,15 +391,19 @@ void serial_readwrite_task()
 					case 65: // Up key
 					case 66: // Down key
 						break;
-					case 67: // Left key
+					case 67: // Right key
 						tmpesc[1] = '[';
 						tmpesc[2] = 'C';
 						puts(tmpesc);
+						curr_char++;
 						break;
-					case 68: // Right key
-						tmpesc[1] = '[';
-						tmpesc[2] = 'D';
-						puts(tmpesc);
+					case 68: // Left key
+						if(curr_char > 0) {
+							tmpesc[1] = '[';
+							tmpesc[2] = 'D';
+							puts(tmpesc);
+							curr_char--;
+						}
 						break;
 				}
 			}
